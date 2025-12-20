@@ -44,6 +44,8 @@ COPY tests ./tests
 RUN yarn config set httpTimeout 1200000
 RUN npx turbo prune --scope=@calcom/web --scope=@calcom/trpc --docker
 RUN yarn install
+# Ensure sharp is installed for the correct platform (linux-x64)
+RUN npm install --os=linux --cpu=x64 sharp || true
 # Build and make embed servable from web/public/embed folder
 RUN yarn workspace @calcom/trpc run build
 RUN yarn --cwd packages/embeds/embed-core workspace @calcom/embed-core run build
