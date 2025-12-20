@@ -2,6 +2,14 @@ const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.N
 const RAILWAY_STATIC_URL = process.env.RAILWAY_STATIC_URL ? `https://${process.env.RAILWAY_STATIC_URL}` : "";
 const HEROKU_URL = process.env.HEROKU_APP_NAME ? `https://${process.env.HEROKU_APP_NAME}.herokuapp.com` : "";
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL ? `https://${process.env.RENDER_EXTERNAL_URL}` : "";
+
+// Ensure URL has a protocol (https:// or http://)
+const ensureUrlProtocol = (url: string | undefined): string => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+};
+
 export const CALCOM_ENV = process.env.CALCOM_ENV || process.env.NODE_ENV;
 export const IS_PRODUCTION = CALCOM_ENV === "production";
 export const IS_PRODUCTION_BUILD = process.env.NODE_ENV === "production";
@@ -10,7 +18,7 @@ const IS_DEV = CALCOM_ENV === "development";
 export const SINGLE_ORG_SLUG = process.env.NEXT_PUBLIC_SINGLE_ORG_SLUG;
 /** https://app.cal.com */
 export const WEBAPP_URL =
-  process.env.NEXT_PUBLIC_WEBAPP_URL ||
+  ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBAPP_URL) ||
   VERCEL_URL ||
   RAILWAY_STATIC_URL ||
   HEROKU_URL ||
@@ -23,7 +31,7 @@ export const WEBAPP_URL_FOR_OAUTH = IS_PRODUCTION || IS_DEV ? WEBAPP_URL : "http
 
 /** @deprecated use `WEBAPP_URL` */
 export const BASE_URL = WEBAPP_URL;
-export const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || "https://cal.com";
+export const WEBSITE_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBSITE_URL) || "https://cal.com";
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Cal.com";
 export const SUPPORT_MAIL_ADDRESS = process.env.NEXT_PUBLIC_SUPPORT_MAIL_ADDRESS || "help@cal.com";
 export const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "Cal.com, Inc.";
@@ -38,7 +46,7 @@ export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || APP_NAME;
 // Else use the website url if defined and finally fallback to the webapp url
 export const CAL_URL = new URL(WEBAPP_URL).hostname.endsWith(".vercel.app")
   ? WEBAPP_URL
-  : process.env.NEXT_PUBLIC_WEBSITE_URL || WEBAPP_URL;
+  : WEBSITE_URL || WEBAPP_URL;
 
 export const IS_CALCOM =
   WEBAPP_URL &&
@@ -58,7 +66,7 @@ export const CONSOLE_URL =
 const CAL_DOMAINS = [".cal.com", ".cal.dev", ".cal.eu", ".cal.qa"];
 const WEBAPP_HOSTNAME = new URL(WEBAPP_URL).hostname;
 export const IS_SELF_HOSTED = !CAL_DOMAINS.some((domain) => WEBAPP_HOSTNAME.endsWith(domain));
-export const EMBED_LIB_URL = process.env.NEXT_PUBLIC_EMBED_LIB_URL || `${WEBAPP_URL}/embed/embed.js`;
+export const EMBED_LIB_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_EMBED_LIB_URL) || `${WEBAPP_URL}/embed/embed.js`;
 export const TRIAL_LIMIT_DAYS = 14;
 export const MAX_SEATS_PER_TIME_SLOT = 1000;
 
@@ -86,7 +94,7 @@ export const PUBLIC_QUICK_AVAILABILITY_ROLLOUT =
   parseInt(process.env.NEXT_PUBLIC_QUICK_AVAILABILITY_ROLLOUT ?? "", 10) || 0;
 
 /** @deprecated use `WEBAPP_URL` */
-export const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_WEBAPP_URL || `https://${process.env.VERCEL_URL}`;
+export const NEXT_PUBLIC_BASE_URL = WEBAPP_URL;
 export const LOGO = "/calcom-logo-white-word.svg";
 export const LOGO_ICON = "/cal-com-icon-white.svg";
 export const AVATAR_FALLBACK = "/avatar.svg";

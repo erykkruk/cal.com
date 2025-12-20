@@ -24,6 +24,18 @@ const isOrganizationsEnabled =
 // To be able to use the version in the app without having to import package.json
 process.env.NEXT_PUBLIC_CALCOM_VERSION = version;
 
+// Ensure URL has a protocol (https:// by default)
+const ensureUrlProtocol = (url) => {
+  if (!url) return url;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+};
+
+// Ensure NEXT_PUBLIC_WEBAPP_URL has protocol before using it elsewhere
+if (process.env.NEXT_PUBLIC_WEBAPP_URL) {
+  process.env.NEXT_PUBLIC_WEBAPP_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBAPP_URL);
+}
+
 // So we can test deploy previews preview
 if (process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_WEBAPP_URL) {
   process.env.NEXT_PUBLIC_WEBAPP_URL = `https://${process.env.VERCEL_URL}`;
@@ -32,8 +44,16 @@ if (process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_WEBAPP_URL) {
 if (!process.env.NEXTAUTH_URL && process.env.NEXT_PUBLIC_WEBAPP_URL) {
   process.env.NEXTAUTH_URL = `${process.env.NEXT_PUBLIC_WEBAPP_URL}/api/auth`;
 }
+// Ensure NEXTAUTH_URL has protocol
+if (process.env.NEXTAUTH_URL) {
+  process.env.NEXTAUTH_URL = ensureUrlProtocol(process.env.NEXTAUTH_URL);
+}
 if (!process.env.NEXT_PUBLIC_WEBSITE_URL) {
   process.env.NEXT_PUBLIC_WEBSITE_URL = process.env.NEXT_PUBLIC_WEBAPP_URL;
+}
+// Ensure NEXT_PUBLIC_WEBSITE_URL has protocol
+if (process.env.NEXT_PUBLIC_WEBSITE_URL) {
+  process.env.NEXT_PUBLIC_WEBSITE_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBSITE_URL);
 }
 if (
   process.env.CSP_POLICY === "strict" &&
