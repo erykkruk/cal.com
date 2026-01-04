@@ -82,24 +82,27 @@ WORKDIR /calcom
 
 RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd wget && rm -rf /var/lib/apt/lists/*
 
-# Enable corepack for yarn
-RUN corepack enable && corepack prepare yarn@stable --activate
-
 COPY --from=builder-two /calcom ./
 
-# Install sharp for the correct platform (linux-x64) in the runner stage
-RUN rm -rf /calcom/node_modules/sharp && \
-    mkdir -p /tmp/sharp-install && \
-    cd /tmp/sharp-install && \
+# Install platform-specific binaries for linux-x64 (sharp, SWC, turbo)
+RUN mkdir -p /tmp/platform-install && \
+    cd /tmp/platform-install && \
     npm init -y && \
-    npm install --os=linux --cpu=x64 sharp && \
+    npm install --os=linux --cpu=x64 sharp @next/swc-linux-x64-gnu turbo && \
+    rm -rf /calcom/node_modules/sharp /calcom/node_modules/.bin/turbo && \
     cp -r node_modules/sharp /calcom/node_modules/ && \
-    rm -rf /tmp/sharp-install
+    cp -r node_modules/@next /calcom/node_modules/ && \
+    cp -r node_modules/turbo /calcom/node_modules/ && \
+    cp node_modules/.bin/turbo /calcom/node_modules/.bin/ 2>/dev/null || true && \
+    rm -rf /tmp/platform-install
 ARG NEXT_PUBLIC_WEBAPP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL \
     BUILT_NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL
 
 ENV NODE_ENV=production
+# Fix for Next.js trying to use "yarn config get registry" which fails with Yarn 4
+ENV NPM_CONFIG_REGISTRY=https://registry.npmjs.org
+ENV YARN_NPM_REGISTRY_SERVER=https://registry.npmjs.org
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=30s --retries=5 \
