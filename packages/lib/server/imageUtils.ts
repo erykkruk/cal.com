@@ -1,4 +1,10 @@
-import sharp from "sharp";
+// Dynamic import of sharp - fails gracefully if not available
+let sharpModule: typeof import("sharp") | null = null;
+try {
+  sharpModule = require("sharp");
+} catch {
+  console.warn("Sharp module not available - image processing will be limited");
+}
 
 // Maximum allowed size for SVG data (5MB)
 const MAX_SVG_SIZE = 5 * 1024 * 1024;
@@ -17,6 +23,10 @@ const SVG = "image/svg+xml";
  */
 export const convertSvgToPng = async (data: string) => {
   if (data.startsWith("data:image/svg+xml;base64,")) {
+    // If sharp is not available, return data as-is
+    if (!sharpModule) {
+      return data;
+    }
     try {
       const base64Data = data.replace(/^data:image\/svg\+xml;base64,/, "");
       const buffer = Buffer.from(base64Data, "base64");
@@ -26,7 +36,7 @@ export const convertSvgToPng = async (data: string) => {
         throw new Error("SVG data exceeds maximum allowed size");
       }
 
-      const pngBuffer = await sharp(buffer).png().toBuffer();
+      const pngBuffer = await sharpModule(buffer).png().toBuffer();
       return `data:image/png;base64,${pngBuffer.toString("base64")}`;
     } catch (error) {
       console.error("Error converting SVG to PNG", error);
@@ -66,9 +76,12 @@ export async function detectContentType(buffer: Buffer): Promise<string | null> 
     return AVIF;
   }
 
-  // Fallback to sharp metadata detection
+  // Fallback to sharp metadata detection (if available)
+  if (!sharpModule) {
+    return null;
+  }
   try {
-    const meta = await sharp(buffer).metadata();
+    const meta = await sharpModule(buffer).metadata();
     switch (meta?.format) {
       case "avif":
         return AVIF;
@@ -114,7 +127,12 @@ export async function resizeImage(params: {
     contentType = (await detectContentType(buffer)) ?? PNG;
   }
 
-  const transformer = sharp(buffer).rotate();
+  // If sharp is not available, return original buffer
+  if (!sharpModule) {
+    return { buffer, contentType };
+  }
+
+  const transformer = sharpModule(buffer).rotate();
 
   if (height) {
     transformer.resize(width, height);

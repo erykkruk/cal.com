@@ -84,17 +84,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd 
 
 COPY --from=builder-two /calcom ./
 
-# Completely remove and reinstall sharp for linux-x64
-RUN rm -rf node_modules/sharp node_modules/@img && \
-    npm install --prefix /calcom --os=linux --cpu=x64 sharp && \
-    # Also install in .next/standalone if it exists
-    if [ -d "apps/web/.next/standalone" ]; then \
-        cp -r node_modules/sharp apps/web/.next/standalone/node_modules/ 2>/dev/null || true; \
-        cp -r node_modules/@img apps/web/.next/standalone/node_modules/ 2>/dev/null || true; \
-    fi
-
-# Set NEXT_SHARP_PATH to help Next.js find sharp
-ENV NEXT_SHARP_PATH=/calcom/node_modules/sharp
+# Sharp is now optional - skip platform-specific installation
+# If you need image processing, uncomment the following:
+# RUN npm install --prefix /calcom --os=linux --cpu=x64 sharp
 ARG NEXT_PUBLIC_WEBAPP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL \
     BUILT_NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL
