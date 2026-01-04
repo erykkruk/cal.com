@@ -14,7 +14,14 @@ export const getSafeRedirectUrl = (url = "") => {
   const urlParsed = new URL(url);
 
   // Avoid open redirection security vulnerability
-  if (![CONSOLE_URL, WEBAPP_URL, WEBSITE_URL].some((u) => new URL(u).origin === urlParsed.origin)) {
+  const safeOrigins = [CONSOLE_URL, WEBAPP_URL, WEBSITE_URL].map((u) => {
+    try {
+      return new URL(u).origin;
+    } catch {
+      return null;
+    }
+  });
+  if (!safeOrigins.some((origin) => origin === urlParsed.origin)) {
     url = `${WEBAPP_URL}/`;
   }
 

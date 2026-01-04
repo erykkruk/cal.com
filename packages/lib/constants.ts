@@ -10,6 +10,20 @@ const ensureUrlProtocol = (url: string | undefined): string => {
   return `https://${url}`;
 };
 
+// Safely get hostname from URL, handling missing protocol
+const safeGetHostname = (url: string): string => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    // If URL parsing fails, try adding protocol
+    try {
+      return new URL(`https://${url}`).hostname;
+    } catch {
+      return "localhost";
+    }
+  }
+};
+
 export const CALCOM_ENV = process.env.CALCOM_ENV || process.env.NODE_ENV;
 export const IS_PRODUCTION = CALCOM_ENV === "production";
 export const IS_PRODUCTION_BUILD = process.env.NODE_ENV === "production";
@@ -44,27 +58,28 @@ export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || APP_NAME;
 // As website isn't setup for preview environments, use the webapp url instead
 // If it's a .vercel.app domain, keep it.
 // Else use the website url if defined and finally fallback to the webapp url
-export const CAL_URL = new URL(WEBAPP_URL).hostname.endsWith(".vercel.app")
+export const CAL_URL = safeGetHostname(WEBAPP_URL).endsWith(".vercel.app")
   ? WEBAPP_URL
   : WEBSITE_URL || WEBAPP_URL;
 
+const WEBAPP_HOSTNAME = safeGetHostname(WEBAPP_URL);
+
 export const IS_CALCOM =
   WEBAPP_URL &&
-  (new URL(WEBAPP_URL).hostname.endsWith("cal.com") ||
-    new URL(WEBAPP_URL).hostname.endsWith("cal.dev") ||
-    new URL(WEBAPP_URL).hostname.endsWith("cal.qa") ||
-    new URL(WEBAPP_URL).hostname.endsWith("cal-staging.com") ||
-    new URL(WEBAPP_URL).hostname.endsWith("cal.eu"));
+  (WEBAPP_HOSTNAME.endsWith("cal.com") ||
+    WEBAPP_HOSTNAME.endsWith("cal.dev") ||
+    WEBAPP_HOSTNAME.endsWith("cal.qa") ||
+    WEBAPP_HOSTNAME.endsWith("cal-staging.com") ||
+    WEBAPP_HOSTNAME.endsWith("cal.eu"));
 
 export const CONSOLE_URL =
-  new URL(WEBAPP_URL).hostname.endsWith(".cal.dev") ||
-  new URL(WEBAPP_URL).hostname.endsWith(".cal.qa") ||
-  new URL(WEBAPP_URL).hostname.endsWith(".cal-staging.com") ||
+  WEBAPP_HOSTNAME.endsWith(".cal.dev") ||
+  WEBAPP_HOSTNAME.endsWith(".cal.qa") ||
+  WEBAPP_HOSTNAME.endsWith(".cal-staging.com") ||
   process.env.NODE_ENV !== "production"
     ? `https://console.cal.dev`
     : `https://console.cal.com`;
 const CAL_DOMAINS = [".cal.com", ".cal.dev", ".cal.eu", ".cal.qa"];
-const WEBAPP_HOSTNAME = new URL(WEBAPP_URL).hostname;
 export const IS_SELF_HOSTED = !CAL_DOMAINS.some((domain) => WEBAPP_HOSTNAME.endsWith(domain));
 export const EMBED_LIB_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_EMBED_LIB_URL) || `${WEBAPP_URL}/embed/embed.js`;
 export const TRIAL_LIMIT_DAYS = 14;

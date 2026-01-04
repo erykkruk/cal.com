@@ -1170,7 +1170,13 @@ export const getOptions = ({
       // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allows callback URLs on the same domain
-      else if (new URL(url).hostname === new URL(WEBAPP_URL).hostname) return url;
+      try {
+        const urlHostname = new URL(url).hostname;
+        const webappHostname = new URL(WEBAPP_URL).hostname;
+        if (urlHostname === webappHostname) return url;
+      } catch {
+        // If URL parsing fails, fall through to baseUrl
+      }
       return baseUrl;
     },
   },

@@ -39,9 +39,13 @@ export function getOrgSlug(hostname: string, forcedSlug?: string) {
   }
   // Find which hostname is being currently used
   const currentHostname = ALLOWED_HOSTNAMES.find((ahn) => {
-    const url = new URL(WEBAPP_URL);
-    const testHostname = `${url.hostname}${url.port ? `:${url.port}` : ""}`;
-    return testHostname.endsWith(`.${ahn}`);
+    try {
+      const url = new URL(WEBAPP_URL);
+      const testHostname = `${url.hostname}${url.port ? `:${url.port}` : ""}`;
+      return testHostname.endsWith(`.${ahn}`);
+    } catch {
+      return false;
+    }
   });
 
   if (!currentHostname) {
@@ -148,9 +152,13 @@ export function getOrgFullOrigin(slug: string | null, options: { protocol: boole
   if (!slug)
     return options.protocol ? WEBSITE_URL : WEBSITE_URL.replace("https://", "").replace("http://", "");
 
-  const orgFullOrigin = `${
-    options.protocol ? `${new URL(WEBSITE_URL).protocol}//` : ""
-  }${slug}.${subdomainSuffix()}`;
+  let protocol = "https:";
+  try {
+    protocol = new URL(WEBSITE_URL).protocol;
+  } catch {
+    // fallback to https
+  }
+  const orgFullOrigin = `${options.protocol ? `${protocol}//` : ""}${slug}.${subdomainSuffix()}`;
   return orgFullOrigin;
 }
 

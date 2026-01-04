@@ -1,5 +1,10 @@
 // We can't import @calcom/lib/constants here yet as this file is compiled using Vite
-const WEBAPP_URL = process.env.EMBED_PUBLIC_WEBAPP_URL || "";
+const ensureUrlProtocol = (url: string): string => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+};
+const WEBAPP_URL = ensureUrlProtocol(process.env.EMBED_PUBLIC_WEBAPP_URL || "");
 if (!WEBAPP_URL) {
   throw new Error("WEBAPP_URL is not set");
 }
