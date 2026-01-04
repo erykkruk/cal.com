@@ -84,8 +84,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd 
 
 COPY --from=builder-two /calcom ./
 
-# Reinstall sharp for the correct platform (linux-x64) in the runner stage
-RUN npm uninstall sharp 2>/dev/null || true && npm install --os=linux --cpu=x64 sharp
+# Install sharp for the correct platform (linux-x64) in the runner stage
+RUN rm -rf /calcom/node_modules/sharp && \
+    mkdir -p /tmp/sharp-install && \
+    cd /tmp/sharp-install && \
+    npm init -y && \
+    npm install --os=linux --cpu=x64 sharp && \
+    cp -r node_modules/sharp /calcom/node_modules/ && \
+    rm -rf /tmp/sharp-install
 ARG NEXT_PUBLIC_WEBAPP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL \
     BUILT_NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL
