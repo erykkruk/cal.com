@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:20 AS builder
+FROM --platform=linux/amd64 node:20 AS builder
 
 WORKDIR /calcom
 
@@ -84,17 +84,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd 
 
 COPY --from=builder-two /calcom ./
 
-# Install platform-specific binaries for linux-x64 (sharp, SWC, turbo)
-RUN mkdir -p /tmp/platform-install && \
-    cd /tmp/platform-install && \
-    npm init -y && \
-    npm install --os=linux --cpu=x64 sharp @next/swc-linux-x64-gnu turbo && \
-    rm -rf /calcom/node_modules/sharp /calcom/node_modules/.bin/turbo && \
-    cp -r node_modules/sharp /calcom/node_modules/ && \
-    cp -r node_modules/@next /calcom/node_modules/ && \
-    cp -r node_modules/turbo /calcom/node_modules/ && \
-    cp node_modules/.bin/turbo /calcom/node_modules/.bin/ 2>/dev/null || true && \
-    rm -rf /tmp/platform-install
+# Completely remove and reinstall sharp for linux-x64
+RUN rm -rf node_modules/sharp node_modules/@img && \
+    npm install --prefix /calcom --os=linux --cpu=x64 sharp && \
+    # Also install in .next/standalone if it exists
+    if [ -d "apps/web/.next/standalone" ]; then \
+        cp -r node_modules/sharp apps/web/.next/standalone/node_modules/ 2>/dev/null || true; \
+        cp -r node_modules/@img apps/web/.next/standalone/node_modules/ 2>/dev/null || true; \
+    fi
+
+# Set NEXT_SHARP_PATH to help Next.js find sharp
+ENV NEXT_SHARP_PATH=/calcom/node_modules/sharp
 ARG NEXT_PUBLIC_WEBAPP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL \
     BUILT_NEXT_PUBLIC_WEBAPP_URL=$NEXT_PUBLIC_WEBAPP_URL
