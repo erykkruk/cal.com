@@ -255,7 +255,7 @@ export default async function main() {
 if (require.main === module) {
   (async () => {
     await main();
-    await seedAppData();
+    // seedAppData was removed but the call remained - this is a bug in upstream
   })()
     .catch((e) => {
       console.error(e);

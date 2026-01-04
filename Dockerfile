@@ -82,6 +82,9 @@ WORKDIR /calcom
 
 RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd wget && rm -rf /var/lib/apt/lists/*
 
+# Enable corepack for yarn
+RUN corepack enable && corepack prepare yarn@stable --activate
+
 COPY --from=builder-two /calcom ./
 
 # Install sharp for the correct platform (linux-x64) in the runner stage
