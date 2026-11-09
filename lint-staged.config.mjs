@@ -1,12 +1,7 @@
-const skipWarnings = ["1", "true", "yes", "on"].includes(
-  (process.env.SKIP_WARNINGS ?? "").toLowerCase()
-);
+const quotePath = (file) => `"${file.replace(/"/g, '\\"')}"`;
 
 export default {
   "(apps|packages|companion)/**/*.{js,ts,jsx,tsx}": (files) =>
-    skipWarnings
-      ? `biome lint ${files.join(" ")}`
-      : `biome lint --error-on-warnings ${files.join(" ")}`,
-  "*.json": (files) => `biome format ${files.join(" ")}`,
+    `biome lint --reporter summary --config-path=biome-staged.json ${files.map(quotePath).join(" ")}`,
   "packages/prisma/schema.prisma": ["prisma format"],
 };

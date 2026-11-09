@@ -1,20 +1,36 @@
-import type { RouterOutputs } from "@calcom/trpc/react";
-
-export type UserTableUser = RouterOutputs["viewer"]["organizations"]["listMembers"]["rows"][number];
+export type UserTableUser = {
+  id: number;
+  name: string | null;
+  username: string | null;
+  email: string;
+  role: string;
+  timeZone: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  accepted: boolean;
+  completedOnboarding: boolean;
+  lastActiveAt: Date | null;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+  customRole?: { name: string } | null;
+  twoFactorEnabled?: boolean;
+  teams: { id: number; name: string; slug: string | null }[];
+  attributes: {
+    attributeId: string;
+    value: string;
+    weight?: number;
+    contains?: string[];
+  }[];
+};
 
 export type PlatformManagedUserTableUser = Omit<
   UserTableUser,
-  "lastActiveAt" | "attributes" | "completedOnboarding" | "disableImpersonation"
+  "lastActiveAt" | "attributes" | "completedOnboarding"
 >;
 
 export type UserTablePayload = {
   showModal: boolean;
   user?: UserTableUser;
-};
-
-export type PlatformUserTablePayload = {
-  showModal: boolean;
-  user?: PlatformManagedUserTableUser;
 };
 
 export type UserTableState = {
@@ -23,10 +39,6 @@ export type UserTableState = {
   impersonateMember: UserTablePayload;
   inviteMember: UserTablePayload;
   editSheet: UserTablePayload & { user?: UserTableUser };
-};
-
-export type PlatforManagedUserTableState = {
-  deleteMember: UserTablePayload;
 };
 
 export type UserTableAction =
@@ -43,22 +55,3 @@ export type UserTableAction =
   | {
       type: "CLOSE_MODAL";
     };
-
-export type PlatformManagedUserTableAction =
-  | {
-      type: "SET_DELETE_ID";
-      payload: PlatformUserTablePayload;
-    }
-  | {
-      type: "CLOSE_MODAL";
-    };
-
-export interface MemberPermissions {
-  canListMembers: boolean;
-  canInvite: boolean;
-  canChangeMemberRole: boolean;
-  canRemove: boolean;
-  canImpersonate: boolean;
-  canEditAttributesForUser?: boolean;
-  canViewAttributes?: boolean;
-}

@@ -57,11 +57,13 @@ export type EventBusyDate = {
   start: Date | string;
   end: Date | string;
   source?: string | null;
+  timeZone?: string;
+  title?: string;
 };
 
 export type EventBusyDetails = EventBusyDate & {
   title?: string;
-  source?: string | null;
+  source: string;
   userId?: number | null;
 };
 
@@ -218,13 +220,17 @@ export interface CalendarEvent {
   platformRescheduleUrl?: string | null;
   platformCancelUrl?: string | null;
   platformBookingUrl?: string | null;
+  hideBranding?: boolean;
   oneTimePassword?: string | null;
   delegationCredentialId?: string | null;
-  domainWideDelegationCredentialId?: string | null;
   customReplyToEmail?: string | null;
   rescheduledBy?: string;
   organizationId?: number | null;
   hasOrganizerChanged?: boolean;
+  assignmentReason?: {
+    category: string; // Translated label like "Routed", "Reassigned", etc.
+    details?: string | null; // The detailed reason string
+  } | null;
 }
 
 export interface EntryPoint {
@@ -244,15 +250,38 @@ export interface AdditionalInformation {
   hangoutLink?: string;
 }
 
-export interface IntegrationCalendar extends Ensure<Partial<_SelectedCalendar>, "externalId"> {
+export interface IntegrationCalendar extends Ensure<Partial<_SelectedCalendar>, "externalId" | "integration"> {
   primary?: boolean;
   name?: string;
   readOnly?: boolean;
   // For displaying the connected email address
   email?: string;
-  primaryEmail?: string;
+  primaryEmail?: string | null;
   credentialId?: number | null;
   integrationTitle?: string;
+  integration: string;
+  customCalendarReminder?: DestinationCalendar["customCalendarReminder"];
+}
+
+/**
+ * Mode for calendar fetch operations to control caching behavior:
+ * - "slots": For getting actual calendar availability (uses cache when available)
+ * - "overlay": For the calendar owner looking at their own calendars, e.g. overlay calendar and troubleshooter
+ *   (does not use cache, includes event titles from calendars that support getAvailabilityWithTitles)
+ * - "booking": For booking confirmation (does not use cache)
+ * - "none": For operations that don't use getAvailability (e.g., deleteEvent, listCalendars)
+ */
+export type CalendarFetchMode = "slots" | "overlay" | "booking" | "none";
+
+/**
+ * Parameters for getAvailability and getAvailabilityWithTimeZones methods
+ */
+export interface GetAvailabilityParams {
+  dateFrom: string;
+  dateTo: string;
+  selectedCalendars: IntegrationCalendar[];
+  mode: CalendarFetchMode;
+  fallbackToPrimary?: boolean;
 }
 
 /**
@@ -280,36 +309,19 @@ export interface Calendar {
 
   deleteEvent(uid: string, event: CalendarEvent, externalCalendarId?: string | null): Promise<unknown>;
 
-  getAvailability(
-    dateFrom: string,
-    dateTo: string,
-    selectedCalendars: IntegrationCalendar[],
-    shouldServeCache?: boolean,
-    fallbackToPrimary?: boolean
-  ): Promise<EventBusyDate[]>;
+  getAvailability(params: GetAvailabilityParams): Promise<EventBusyDate[]>;
 
   // for OOO calibration (only google calendar for now)
-  getAvailabilityWithTimeZones?(
-    dateFrom: string,
-    dateTo: string,
-    selectedCalendars: IntegrationCalendar[],
-    fallbackToPrimary?: boolean
-  ): Promise<{ start: Date | string; end: Date | string; timeZone: string }[]>;
+  getAvailabilityWithTimeZones?(params: GetAvailabilityParams): Promise<EventBusyDate[]>;
+
+  // Event titles are private, the result must only ever be shown to the owner of the calendar
+  getAvailabilityWithTitles?(params: GetAvailabilityParams): Promise<EventBusyDate[]>;
 
   fetchAvailabilityAndSetCache?(selectedCalendars: IntegrationCalendar[]): Promise<unknown>;
 
   listCalendars(event?: CalendarEvent): Promise<IntegrationCalendar[]>;
 
-  testDelegationCredentialSetup?(): Promise<boolean>;
-
-  watchCalendar?(options: {
-    calendarId: string;
-    eventTypeIds: SelectedCalendarEventTypeIds;
-  }): Promise<unknown>;
-  unwatchCalendar?(options: {
-    calendarId: string;
-    eventTypeIds: SelectedCalendarEventTypeIds;
-  }): Promise<void>;
+  testDelegationCredentialSetup?(): Promise<void>;
 }
 
 /**

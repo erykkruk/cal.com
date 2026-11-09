@@ -19,7 +19,6 @@ import { Label } from "@calcom/ui/components/form";
 import { TextField } from "@calcom/ui/components/form";
 import { Switch } from "@calcom/ui/components/form";
 
-import { TimeTimeUnitInput } from "~/ee/workflows/components/TimeTimeUnitInput";
 
 import WebhookTestDisclosure from "./WebhookTestDisclosure";
 
@@ -57,7 +56,6 @@ const WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2: Record<string, WebhookTriggerEve
     { value: WebhookTriggerEvents.MEETING_ENDED, label: "meeting_ended" },
     { value: WebhookTriggerEvents.MEETING_STARTED, label: "meeting_started" },
     { value: WebhookTriggerEvents.RECORDING_READY, label: "recording_ready" },
-    { value: WebhookTriggerEvents.INSTANT_MEETING, label: "instant_meeting" },
     { value: WebhookTriggerEvents.OOO_CREATED, label: "ooo_created" },
     {
       value: WebhookTriggerEvents.RECORDING_TRANSCRIPTION_GENERATED,
@@ -68,10 +66,7 @@ const WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2: Record<string, WebhookTriggerEve
       value: WebhookTriggerEvents.AFTER_GUESTS_CAL_VIDEO_NO_SHOW,
       label: "after_guests_cal_video_no_show",
     },
-  ],
-  "routing-forms": [
-    { value: WebhookTriggerEvents.FORM_SUBMITTED, label: "form_submitted" },
-    { value: WebhookTriggerEvents.FORM_SUBMITTED_NO_EVENT, label: "form_submitted_no_event" },
+    { value: WebhookTriggerEvents.WRONG_ASSIGNMENT_REPORT, label: "wrong_assignment_report" },
   ],
 } as const;
 
@@ -252,14 +247,12 @@ const WebhookForm = (props: {
   overrideTriggerOptions?: (typeof WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2)["core"];
   onSubmit: (event: WebhookFormSubmitData) => void;
   onCancel?: () => void;
-  noRoutingFormTriggers: boolean;
-  selectOnlyInstantMeetingOption?: boolean;
   headerWrapper?: (
     formMethods: ReturnType<typeof useForm<WebhookFormValues>>,
     children: React.ReactNode
   ) => React.ReactNode;
 }) => {
-  const { apps = [], selectOnlyInstantMeetingOption = false, overrideTriggerOptions } = props;
+  const { apps = [], overrideTriggerOptions } = props;
   const { t } = useLocale();
   const webhookVariables = getWebhookVariables(t);
 
@@ -268,7 +261,6 @@ const WebhookForm = (props: {
     : [...WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2["core"]];
   if (apps) {
     for (const app of apps) {
-      if (app === "routing-forms" && props.noRoutingFormTriggers) continue;
       if (WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2[app]) {
         triggerOptions.push(...WEBHOOK_TRIGGER_EVENTS_GROUPED_BY_APP_V2[app]);
       }
@@ -279,11 +271,7 @@ const WebhookForm = (props: {
   const getEventTriggers = () => {
     if (props.webhook) return props.webhook.eventTriggers;
 
-    return (
-      selectOnlyInstantMeetingOption
-        ? translatedTriggerOptions.filter((option) => option.value === WebhookTriggerEvents.INSTANT_MEETING)
-        : translatedTriggerOptions.filter((option) => option.value !== WebhookTriggerEvents.INSTANT_MEETING)
-    ).map((option) => option.value);
+    return translatedTriggerOptions.map((option) => option.value);
   };
 
   const formMethods = useForm<WebhookFormValues>({
@@ -457,7 +445,7 @@ const WebhookForm = (props: {
         {showTimeSection && (
           <div className="mt-5">
             <Label>{t("how_long_after_user_no_show_minutes")}</Label>
-            <TimeTimeUnitInput disabled={false} defaultTime={5} />
+            <div />
           </div>
         )}
 

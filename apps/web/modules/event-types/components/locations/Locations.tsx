@@ -6,7 +6,7 @@ import { useFieldArray } from "react-hook-form";
 import type { UseFormGetValues, UseFormSetValue, Control, FormState } from "react-hook-form";
 
 import type { EventLocationType } from "@calcom/app-store/locations";
-import { getEventLocationType, MeetLocationType } from "@calcom/app-store/locations";
+import { getLocationByType, MeetLocationType } from "@calcom/app-store/locations";
 import { useIsPlatform } from "@calcom/atoms/hooks/useIsPlatform";
 import type { LocationCustomClassNames } from "@calcom/features/eventtypes/components/locations/types";
 import type { LocationFormValues, EventTypeSetupProps } from "@calcom/features/eventtypes/lib/types";
@@ -18,7 +18,7 @@ import { WEBAPP_URL } from "@calcom/lib/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import classNames from "@calcom/ui/classNames";
 import { Button } from "@calcom/ui/components/button";
-import { Icon } from "@calcom/ui/components/icon";
+import { CheckIcon, CornerDownRightIcon, XIcon } from "@coss/ui/icons";
 import { showToast } from "@calcom/ui/components/toast";
 
 import CalVideoSettings from "./CalVideoSettings";
@@ -124,7 +124,7 @@ const Locations: React.FC<LocationsProps> = ({
 
   const validLocations =
     getValues("locations")?.filter((location) => {
-      const eventLocation = getEventLocationType(location.type);
+      const eventLocation = getLocationByType(location.type);
       if (!eventLocation) {
         // It's possible that the location app in use got uninstalled.
         return false;
@@ -169,7 +169,7 @@ const Locations: React.FC<LocationsProps> = ({
     <div className={classNames("w-full", customClassNames?.container)}>
       <ul ref={animationRef} className={classNames("stack-y-2")}>
         {locationFields.map((field, index) => {
-          const eventLocationType = getEventLocationType(field.type);
+          const eventLocationType = getLocationByType(field.type);
           const defaultLocation = field;
 
           const isCalVideo = field.type === "integrations:daily";
@@ -195,7 +195,7 @@ const Locations: React.FC<LocationsProps> = ({
                     setShowEmptyLocationSelect(false);
                     if (e?.value) {
                       const newLocationType = e.value;
-                      const eventLocationType = getEventLocationType(newLocationType);
+                      const eventLocationType = getLocationByType(newLocationType);
                       if (!eventLocationType) {
                         return;
                       }
@@ -242,8 +242,7 @@ const Locations: React.FC<LocationsProps> = ({
                     }}
                     aria-label={t("remove")}>
                     <div className="h-4 w-4">
-                      <Icon
-                        name="x"
+                      <XIcon
                         className={classNames(
                           "hover:text-emphasis text-subtle h-4 w-4",
                           customClassNames?.removeLocationIcon
@@ -268,7 +267,7 @@ const Locations: React.FC<LocationsProps> = ({
                   <div className="w-full">
                     <div className="flex gap-2">
                       <div className="flex items-center justify-center">
-                        <Icon name="corner-down-right" className="h-4 w-4" />
+                        <CornerDownRightIcon className="h-4 w-4" />
                       </div>
                       <LocationInput
                         data-testid={`${eventLocationType.type}-location-input`}
@@ -341,7 +340,7 @@ const Locations: React.FC<LocationsProps> = ({
                 setShowEmptyLocationSelect(false);
                 if (e?.value) {
                   const newLocationType = e.value;
-                  const eventLocationType = getEventLocationType(newLocationType);
+                  const eventLocationType = getLocationByType(newLocationType);
                   if (!eventLocationType) {
                     return;
                   }
@@ -374,7 +373,7 @@ const Locations: React.FC<LocationsProps> = ({
         ) && (
           <div className="text-default flex items-center text-sm">
             <div className="mr-1.5 h-3 w-3">
-              <Icon name="check" className="h-3 w-3" />
+              <CheckIcon className="h-3 w-3" />
             </div>
             <p className="text-default text-sm">
               <ServerTrans

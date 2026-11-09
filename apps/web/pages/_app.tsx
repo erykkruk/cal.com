@@ -4,7 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import React from "react";
 import CacheProvider from "react-inlinesvg/provider";
 
-import { WebPushProvider } from "@calcom/features/notifications/WebPushContext";
+import { WebPushProvider } from "@calcom/web/modules/notifications/components/WebPushContext";
 import { trpc } from "@calcom/trpc/react";
 
 import type { AppProps } from "@lib/app-providers";
@@ -17,7 +17,7 @@ function MyApp(props: AppProps) {
   return (
     <SessionProvider session={pageProps.session ?? undefined}>
       <WebPushProvider>
-        {/* @ts-expect-error FIXME remove this comment when upgrading typescript to v5 */}
+        {/* @ts-expect-error react-inlinesvg/provider is incompatible with @types/react@18.0.26. Remove when these types are compatible. */}
         <CacheProvider>
           {Component.PageWrapper ? <Component.PageWrapper {...props} /> : <Component {...pageProps} />}
         </CacheProvider>

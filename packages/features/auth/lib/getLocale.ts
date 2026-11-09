@@ -3,7 +3,9 @@ import { lookup } from "bcp-47-match";
 import type { GetTokenParams } from "next-auth/jwt";
 import { getToken } from "next-auth/jwt";
 
-import { i18n } from "@calcom/config/next-i18next.config";
+import { i18n } from "@calcom/i18n/next-i18next.config";
+
+import { normalizeRequestedLocale } from "./normalizeLocale";
 
 type ReadonlyHeaders = Awaited<ReturnType<typeof import("next/headers").headers>>;
 type ReadonlyRequestCookies = Awaited<ReturnType<typeof import("next/headers").cookies>>;
@@ -53,7 +55,9 @@ export const getLocale = async (
   // the regex underneath is more permissive
   const testedRegion = /^[a-zA-Z0-9]+$/.test(region) ? region : "";
 
-  const requestedLocale = `${testedCode}${testedRegion !== "" ? "-" : ""}${testedRegion}`;
+  const requestedLocale = normalizeRequestedLocale(
+    `${testedCode}${testedRegion !== "" ? "-" : ""}${testedRegion}`
+  );
 
   // use fallback to closest supported locale.
   // for instance, es-419 will be transformed to es

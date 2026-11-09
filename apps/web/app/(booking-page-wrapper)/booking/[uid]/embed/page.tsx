@@ -3,7 +3,8 @@ import withEmbedSsrAppDir from "app/WithEmbedSSR";
 import type { PageProps as ServerPageProps } from "app/_types";
 import { cookies, headers } from "next/headers";
 
-import { loadTranslations } from "@calcom/lib/server/i18n";
+import { resolveBookerLocale, BOOKER_LOCALE_QUERY_PARAM } from "@calcom/features/bookings/lib/resolveBookerLocale";
+import { loadTranslations } from "@calcom/i18n/server";
 
 import { buildLegacyCtx } from "@lib/buildLegacyCtx";
 
@@ -26,7 +27,7 @@ const ServerPage = async ({ params, searchParams }: ServerPageProps) => {
   const context = buildLegacyCtx(await headers(), await cookies(), await params, await searchParams);
   const props = await getEmbedData(context);
 
-  const eventLocale = props.eventType?.interfaceLanguage;
+  const eventLocale = resolveBookerLocale((await searchParams)[BOOKER_LOCALE_QUERY_PARAM], props.eventType?.interfaceLanguage);
   if (eventLocale) {
     const ns = "common";
     const translations = await loadTranslations(eventLocale, ns);

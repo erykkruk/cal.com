@@ -1,22 +1,21 @@
 import {
-  createCredentials,
-  addTeamsToDb,
   addEventTypesToDb,
+  addTeamsToDb,
   addUsersToDb,
-} from "@calcom/web/test/utils/bookingScenario/bookingScenario";
-
-import { describe, test, expect, vi } from "vitest";
-
+  createCredentials,
+} from "@calcom/testing/lib/bookingScenario/bookingScenario";
 import { UserRepository } from "@calcom/features/users/repositories/UserRepository";
+import { describe, expect, test, vi } from "vitest";
 
 vi.mock("@calcom/features/users/repositories/UserRepository", () => {
   return {
-    UserRepository: vi.fn().mockImplementation(function() { return {
-      enrichUserWithItsProfile: vi.fn(),
-    }; }),
+    UserRepository: vi.fn().mockImplementation(function () {
+      return {
+        enrichUserWithItsProfile: vi.fn(),
+      };
+    }),
   };
 });
-
 describe("getAllCredentialsIncludeServiceAccountKey", () => {
   test("Get an individual's credentials", async () => {
     const mockEnrichUserWithItsProfile = vi.fn().mockReturnValue({

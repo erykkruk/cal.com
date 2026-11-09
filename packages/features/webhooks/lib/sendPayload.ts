@@ -4,7 +4,6 @@ import { compile } from "handlebars";
 import type { TGetTranscriptAccessLink } from "@calcom/app-store/dailyvideo/zod";
 import { getHumanReadableLocationValue } from "@calcom/app-store/locations";
 import type { WebhookSubscriber, PaymentData } from "@calcom/features/webhooks/lib/dto/types";
-import { DelegationCredentialErrorPayloadType } from "@calcom/features/webhooks/lib/dto/types";
 import { getUTCOffsetByTimezone } from "@calcom/lib/dayjs";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
 
@@ -79,7 +78,7 @@ export type OOOEntryPayloadType = {
   };
 };
 
-export type EventPayloadType = CalendarEvent &
+export type EventPayloadType = Omit<CalendarEvent, "assignmentReason"> &
   TranscriptionGeneratedPayload &
   EventTypeInfo & {
     uid?: string | null;
@@ -96,13 +95,18 @@ export type EventPayloadType = CalendarEvent &
     rescheduledBy?: string;
     cancelledBy?: string;
     paymentData?: PaymentData;
+    requestReschedule?: boolean;
+    assignmentReason?:
+      | string
+      | { reasonEnum: string; reasonString: string }[]
+      | { category: string; details?: string | null }
+      | null;
   };
 
 export type WebhookPayloadType =
   | EventPayloadType
   | OOOEntryPayloadType
-  | BookingNoShowUpdatedPayload
-  | DelegationCredentialErrorPayloadType;
+  | BookingNoShowUpdatedPayload;
 
 type WebhookDataType = WebhookPayloadType & { triggerEvent: string; createdAt: string };
 
@@ -206,14 +210,8 @@ export function isNoShowPayload(data: WebhookPayloadType): data is BookingNoShow
   return "message" in data && "bookingUid" in data;
 }
 
-export function isDelegationCredentialErrorPayload(
-  data: WebhookPayloadType
-): data is DelegationCredentialErrorPayloadType {
-  return "error" in data && "credential" in data && "user" in data;
-}
-
 export function isEventPayload(data: WebhookPayloadType): data is EventPayloadType {
-  return !isNoShowPayload(data) && !isOOOEntryPayload(data) && !isDelegationCredentialErrorPayload(data);
+  return !isNoShowPayload(data) && !isOOOEntryPayload(data);
 }
 
 const sendPayload = async (
@@ -242,10 +240,7 @@ const sendPayload = async (
   if (body === undefined) {
     if (
       template &&
-      (isOOOEntryPayload(data) ||
-        isEventPayload(data) ||
-        isNoShowPayload(data) ||
-        isDelegationCredentialErrorPayload(data))
+      (isOOOEntryPayload(data) || isEventPayload(data) || isNoShowPayload(data))
     ) {
       body = applyTemplate(template, { ...data, triggerEvent, createdAt }, contentType);
     } else {

@@ -32,10 +32,10 @@ services:
     networks:
       - stack
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
 
   calcom:
-    image: calcom.docker.scarf.sh/calcom/cal.com
+    image: calcom.docker.scarf.sh/calcom/cal.diy
     build:
       context: .
       dockerfile: Dockerfile
@@ -119,12 +119,12 @@ services:
 
   # Optional use of Prisma Studio. In production, comment out or remove the section below to prevent unwanted access to your database.
   studio:
-    image: calcom.docker.scarf.sh/calcom/cal.com
+    image: calcom.docker.scarf.sh/calcom/cal.diy
     restart: always
     networks:
       - stack
     ports:
-      - 5555:5555
+      - "127.0.0.1:5555:5555"
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DATABASE_HOST}/${POSTGRES_DB}

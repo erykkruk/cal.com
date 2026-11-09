@@ -1,13 +1,12 @@
-import { useRouter } from "next/navigation";
-
 import dayjs from "@calcom/dayjs";
-import type { PaymentPageProps } from "@calcom/ee/payments/pages/payment";
 import { useIsEmbed } from "@calcom/embed-core/embed-iframe";
+import { BOOKER_LOCALE_QUERY_PARAM } from "@calcom/features/bookings/lib/bookerLocaleQueryParam";
 import type { BookingResponse } from "@calcom/features/bookings/types";
 import { getSafe } from "@calcom/lib/getSafe";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { navigateInTopWindow } from "@calcom/lib/navigateInTopWindow";
 import type { EventType } from "@calcom/prisma/client";
+import { useRouter } from "next/navigation";
 
 export function getNewSearchParams(args: {
   query: Record<string, string | null | undefined | boolean>;
@@ -57,7 +56,7 @@ export function getNewSearchParams(args: {
 }
 
 type SuccessRedirectBookingType = Pick<
-  BookingResponse | PaymentPageProps["booking"],
+  BookingResponse,
   "uid" | "title" | "description" | "startTime" | "endTime" | "location" | "attendees" | "user" | "responses"
 >;
 
@@ -199,6 +198,7 @@ export const useBookingSuccessRedirect = () => {
     query = {
       ...query,
       "cal.rerouting": searchParams.get("cal.rerouting"),
+      [BOOKER_LOCALE_QUERY_PARAM]: searchParams.get(BOOKER_LOCALE_QUERY_PARAM),
     };
 
     if (successRedirectUrl) {
@@ -211,9 +211,9 @@ export const useBookingSuccessRedirect = () => {
 
       const bookingExtraParams = getBookingRedirectExtraParams(booking);
 
-      // Filter internal Cal.com params when redirecting to external URLs.
+      // Filter internal Cal.diy params when redirecting to external URLs.
       // - It prevents leaking internal state.
-      // - Certain websites might break due to the presence of certain params e.g. Wordpress has different meaning for `embed` param and an embed param passed by Cal.com breaks a wordpress webpage
+      // - Certain websites might break due to the presence of certain params e.g. Wordpress has different meaning for `embed` param and an embed param passed by Cal.diy breaks a wordpress webpage
       const newSearchParams = getNewSearchParams({
         query: {
           ...query,

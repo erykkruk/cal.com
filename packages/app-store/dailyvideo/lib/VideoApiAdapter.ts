@@ -91,6 +91,7 @@ export const FAKE_DAILY_CREDENTIAL: CredentialForCalendarService & { invalid: bo
   appId: "daily-video",
   invalid: false,
   teamId: null,
+  encryptedKey: null,
   delegatedToId: null,
   delegatedTo: null,
   delegationCredentialId: null,
@@ -242,7 +243,7 @@ const DailyVideoApiAdapter = (): VideoApiAdapter => {
     region?: RoomGeo
   ): Promise<VideoCallData> {
     if (!event.uid) {
-      throw new Error("We need need the booking uid to create the Daily reference in DB");
+      throw new Error("We need the booking uid to create the Daily reference in DB");
     }
     const body = await translateEvent(event, region);
     const dailyEvent = await postToDailyAPI(endpoint, body).then(dailyReturnTypeSchema.parse);

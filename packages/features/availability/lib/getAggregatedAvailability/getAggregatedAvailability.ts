@@ -42,18 +42,22 @@ export const getAggregatedAvailability = (
   const fixedDateRanges = mergeOverlappingDateRanges(
     intersect(fixedHosts.map((s) => (!isTeamEvent ? s.dateRanges : s.oooExcludedDateRanges)))
   );
-  const dateRangesToIntersect = fixedDateRanges.length ? [fixedDateRanges] : [];
+  // Empty fixed ranges mean the fixed hosts are busy, so no slot is free; checking the ranges would drop the constraint
+  const dateRangesToIntersect = fixedHosts.length ? [fixedDateRanges] : [];
   const roundRobinHosts = userAvailability.filter(({ user }) => user?.isFixed !== true);
   if (roundRobinHosts.length) {
     // Group round robin hosts by their groupId
-    const hostsByGroup = roundRobinHosts.reduce((groups, host) => {
-      const groupId = host.user?.groupId || DEFAULT_GROUP_ID;
-      if (!groups[groupId]) {
-        groups[groupId] = [];
-      }
-      groups[groupId].push(host);
-      return groups;
-    }, {} as Record<string, typeof roundRobinHosts>);
+    const hostsByGroup = roundRobinHosts.reduce(
+      (groups, host) => {
+        const groupId = host.user?.groupId || DEFAULT_GROUP_ID;
+        if (!groups[groupId]) {
+          groups[groupId] = [];
+        }
+        groups[groupId].push(host);
+        return groups;
+      },
+      {} as Record<string, typeof roundRobinHosts>
+    );
 
     // at least one host from each group needs to be available
     Object.values(hostsByGroup).forEach((groupHosts) => {

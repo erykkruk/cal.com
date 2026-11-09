@@ -1,14 +1,18 @@
+/**
+ * Ensures URL has a protocol prefix. If the URL doesn't start with http:// or https://,
+ * prepends https:// to make it valid for URL parsing.
+ * This handles cases where environment variables have their protocol stripped
+ */
+function ensureProtocol(url: string | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+}
+
 const VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : "";
 const RAILWAY_STATIC_URL = process.env.RAILWAY_STATIC_URL ? `https://${process.env.RAILWAY_STATIC_URL}` : "";
 const HEROKU_URL = process.env.HEROKU_APP_NAME ? `https://${process.env.HEROKU_APP_NAME}.herokuapp.com` : "";
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL ? `https://${process.env.RENDER_EXTERNAL_URL}` : "";
-
-// Ensure URL has a protocol (https:// or http://)
-const ensureUrlProtocol = (url: string | undefined): string => {
-  if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return `https://${url}`;
-};
 
 // Safely get hostname from URL, handling missing protocol
 const safeGetHostname = (url: string): string => {
@@ -32,7 +36,7 @@ const IS_DEV = CALCOM_ENV === "development";
 export const SINGLE_ORG_SLUG = process.env.NEXT_PUBLIC_SINGLE_ORG_SLUG;
 /** https://app.cal.com */
 export const WEBAPP_URL =
-  ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBAPP_URL) ||
+  ensureProtocol(process.env.NEXT_PUBLIC_WEBAPP_URL) ||
   VERCEL_URL ||
   RAILWAY_STATIC_URL ||
   HEROKU_URL ||
@@ -45,12 +49,11 @@ export const WEBAPP_URL_FOR_OAUTH = IS_PRODUCTION || IS_DEV ? WEBAPP_URL : "http
 
 /** @deprecated use `WEBAPP_URL` */
 export const BASE_URL = WEBAPP_URL;
-export const WEBSITE_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_WEBSITE_URL) || "https://cal.com";
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Cal.com";
+export const WEBSITE_URL = ensureProtocol(process.env.NEXT_PUBLIC_WEBSITE_URL) || "https://cal.com";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Cal.diy";
 export const SUPPORT_MAIL_ADDRESS = process.env.NEXT_PUBLIC_SUPPORT_MAIL_ADDRESS || "help@cal.com";
 export const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "Cal.com, Inc.";
-export const SENDER_ID = process.env.NEXT_PUBLIC_SENDER_ID || "Cal";
-export const SENDER_NAME = process.env.NEXT_PUBLIC_SENDGRID_SENDER_NAME || "Cal.com";
+export const SENDER_NAME = process.env.NEXT_PUBLIC_SENDGRID_SENDER_NAME || "Cal.diy";
 export const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || APP_NAME;
 
 // This is the URL from which all Cal Links and their assets are served.
@@ -81,7 +84,7 @@ export const CONSOLE_URL =
     : `https://console.cal.com`;
 const CAL_DOMAINS = [".cal.com", ".cal.dev", ".cal.eu", ".cal.qa"];
 export const IS_SELF_HOSTED = !CAL_DOMAINS.some((domain) => WEBAPP_HOSTNAME.endsWith(domain));
-export const EMBED_LIB_URL = ensureUrlProtocol(process.env.NEXT_PUBLIC_EMBED_LIB_URL) || `${WEBAPP_URL}/embed/embed.js`;
+export const EMBED_LIB_URL = ensureProtocol(process.env.NEXT_PUBLIC_EMBED_LIB_URL) || `${WEBAPP_URL}/embed/embed.js`;
 export const TRIAL_LIMIT_DAYS = 14;
 export const MAX_SEATS_PER_TIME_SLOT = 1000;
 
@@ -111,6 +114,7 @@ export const PUBLIC_QUICK_AVAILABILITY_ROLLOUT =
 /** @deprecated use `WEBAPP_URL` */
 export const NEXT_PUBLIC_BASE_URL = WEBAPP_URL;
 export const LOGO = "/calcom-logo-white-word.svg";
+export const LOGO_DARK = "/cal-logo-word-black.svg";
 export const LOGO_ICON = "/cal-com-icon-white.svg";
 export const AVATAR_FALLBACK = "/avatar.svg";
 export const FAVICON_16 = "/favicon-16x16.png";
@@ -121,7 +125,6 @@ export const ANDROID_CHROME_ICON_192 = "/android-chrome-192x192.png";
 export const ANDROID_CHROME_ICON_256 = "/android-chrome-256x256.png";
 export const ROADMAP = "https://cal.com/roadmap";
 export const DESKTOP_APP_LINK = "https://cal.com/download";
-export const JOIN_COMMUNITY = "https://github.com/calcom/cal.com/discussions";
 export const POWERED_BY_URL = "https://go.cal.com/booking";
 export const DOCS_URL = "https://cal.com/docs";
 export const DEVELOPER_DOCS = "https://developer.cal.com";
@@ -188,7 +191,7 @@ export const IS_VISUAL_REGRESSION_TESTING = Boolean(globalThis.window?.Meticulou
 
 export const BOOKER_NUMBER_OF_DAYS_TO_LOAD = parseInt(
   process.env.NEXT_PUBLIC_BOOKER_NUMBER_OF_DAYS_TO_LOAD ?? "0",
-  0
+  10
 );
 
 export const CLOUDFLARE_SITE_ID = process.env.NEXT_PUBLIC_CLOUDFLARE_SITEKEY;
@@ -234,6 +237,10 @@ export const GOOGLE_CALENDAR_SCOPES = [
 ];
 export const DIRECTORY_IDS_TO_LOG = process.env.DIRECTORY_IDS_TO_LOG?.split(",") || [];
 export const SCANNING_WORKFLOW_STEPS = !!(!IS_SELF_HOSTED && process.env.IFFY_API_KEY);
+
+// Cloudflare URL Scanner - checks URLs for malicious content in workflows and event types
+export const URL_SCANNING_ENABLED =
+  !!process.env.CLOUDFLARE_URL_SCANNER_API_TOKEN && !!process.env.CLOUDFLARE_ACCOUNT_ID;
 
 export const IS_DUB_REFERRALS_ENABLED =
   !!process.env.NEXT_PUBLIC_DUB_PROGRAM_ID && process.env.NEXT_PUBLIC_DUB_PROGRAM_ID !== "";
@@ -283,3 +290,10 @@ export const IS_API_V2_E2E = process.env.IS_E2E === "true";
 
 export const ENABLE_ASYNC_TASKER =
   process.env.ENABLE_ASYNC_TASKER === "true" && !process.env.NEXT_PUBLIC_IS_E2E && !IS_API_V2_E2E;
+
+export const MICROSOFT_CALENDAR_SCOPES = [
+  "User.Read",
+  "Calendars.Read",
+  "Calendars.ReadWrite",
+  "offline_access",
+];
