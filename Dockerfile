@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:22 AS builder
+FROM --platform=linux/amd64 node:22 AS builder
 
 WORKDIR /calcom
 
