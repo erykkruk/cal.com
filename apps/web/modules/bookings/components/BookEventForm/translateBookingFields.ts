@@ -15,21 +15,26 @@ const BUDGET_FIELD = "budget";
 const NDA_FIELD = "nda";
 const NOTES_FIELD = "notes";
 
-const BUDGET_UP_TO_10K = "up to $10,000";
-const BUDGET_10K_25K = "$$10,000-$25,000";
-const BUDGET_25K_50K = "$$25,000-$50,000";
-const BUDGET_OVER_50K = "$$50,000+";
+// Same bands as the codigee.com contact form; the English labels are the stored values.
+const BUDGET_UNDER_15K = "Less than $15,000";
+const BUDGET_15K_25K = "$15,000 - $25,000";
+const BUDGET_25K_50K = "$25,000 - $50,000";
+const BUDGET_50K_100K = "$50,000 - $100,000";
+const BUDGET_OVER_100K = "More than $100,000";
 const TOPIC_NEW = "New Project Development";
 const TOPIC_EXISTING = "Existing App Improvement";
 const TOPIC_RESCUE = "Project Rescue or Takeover";
 const TOPIC_CONSULTATION = "General Consultation";
 const TOPIC_OTHER = "Other";
 
-const budgetOptions = (upTo: string, over: string): Record<string, string> => ({
-  [BUDGET_UP_TO_10K]: `${upTo} $10,000`,
-  [BUDGET_10K_25K]: "$10,000-$25,000",
-  [BUDGET_25K_50K]: "$25,000-$50,000",
-  [BUDGET_OVER_50K]: over,
+const budgetOptions = (
+  labels: readonly [string, string, string, string, string]
+): Record<string, string> => ({
+  [BUDGET_UNDER_15K]: labels[0],
+  [BUDGET_15K_25K]: labels[1],
+  [BUDGET_25K_50K]: labels[2],
+  [BUDGET_50K_100K]: labels[3],
+  [BUDGET_OVER_100K]: labels[4],
 });
 
 const TRANSLATIONS: Record<string, LocaleTranslations> = {
@@ -44,7 +49,16 @@ const TRANSLATIONS: Record<string, LocaleTranslations> = {
         [TOPIC_OTHER]: "Inne",
       },
     },
-    [BUDGET_FIELD]: { label: "Jaki masz budżet?", options: budgetOptions("do", "$50,000+") },
+    [BUDGET_FIELD]: {
+      label: "Jaki masz budżet?",
+      options: budgetOptions([
+        "Poniżej 50 tys. zł netto",
+        "50-90 tys. zł netto",
+        "90-175 tys. zł netto",
+        "175-350 tys. zł netto",
+        "Powyżej 350 tys. zł netto",
+      ]),
+    },
     [NDA_FIELD]: {
       label: "Umowa o zachowaniu poufności (NDA)",
       placeholder:
@@ -66,7 +80,16 @@ const TRANSLATIONS: Record<string, LocaleTranslations> = {
         [TOPIC_OTHER]: "Sonstiges",
       },
     },
-    [BUDGET_FIELD]: { label: "Wie hoch ist dein Budget?", options: budgetOptions("bis", "$50,000+") },
+    [BUDGET_FIELD]: {
+      label: "Wie hoch ist dein Budget?",
+      options: budgetOptions([
+        "Unter 14.000 EUR",
+        "14.000-22.500 EUR",
+        "22.500-45.000 EUR",
+        "45.000-90.000 EUR",
+        "Über 90.000 EUR",
+      ]),
+    },
     [NDA_FIELD]: {
       label: "Geheimhaltungsvereinbarung (NDA)",
       placeholder:
@@ -88,7 +111,16 @@ const TRANSLATIONS: Record<string, LocaleTranslations> = {
         [TOPIC_OTHER]: "Annet",
       },
     },
-    [BUDGET_FIELD]: { label: "Hva er budsjettet ditt?", options: budgetOptions("opptil", "$50,000+") },
+    [BUDGET_FIELD]: {
+      label: "Hva er budsjettet ditt?",
+      options: budgetOptions([
+        "Under 14 000 EUR",
+        "14 000-22 500 EUR",
+        "22 500-45 000 EUR",
+        "45 000-90 000 EUR",
+        "Over 90 000 EUR",
+      ]),
+    },
     [NDA_FIELD]: {
       label: "Taushetsavtale (NDA)",
       placeholder:
@@ -110,7 +142,16 @@ const TRANSLATIONS: Record<string, LocaleTranslations> = {
         [TOPIC_OTHER]: "Annat",
       },
     },
-    [BUDGET_FIELD]: { label: "Vad är din budget?", options: budgetOptions("upp till", "$50,000+") },
+    [BUDGET_FIELD]: {
+      label: "Vad är din budget?",
+      options: budgetOptions([
+        "Under 14 000 EUR",
+        "14 000-22 500 EUR",
+        "22 500-45 000 EUR",
+        "45 000-90 000 EUR",
+        "Över 90 000 EUR",
+      ]),
+    },
     [NDA_FIELD]: {
       label: "Sekretessavtal (NDA)",
       placeholder:
@@ -132,7 +173,16 @@ const TRANSLATIONS: Record<string, LocaleTranslations> = {
         [TOPIC_OTHER]: "Andet",
       },
     },
-    [BUDGET_FIELD]: { label: "Hvad er dit budget?", options: budgetOptions("op til", "$50,000+") },
+    [BUDGET_FIELD]: {
+      label: "Hvad er dit budget?",
+      options: budgetOptions([
+        "Under 14.000 EUR",
+        "14.000-22.500 EUR",
+        "22.500-45.000 EUR",
+        "45.000-90.000 EUR",
+        "Over 90.000 EUR",
+      ]),
+    },
     [NDA_FIELD]: {
       label: "Fortrolighedsaftale (NDA)",
       placeholder:
